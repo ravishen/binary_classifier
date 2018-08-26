@@ -1,3 +1,9 @@
+
+# coding: utf-8
+
+# In[13]:
+
+
 # -*- coding: utf-8 -*-
 
 import numpy as np
@@ -9,8 +15,8 @@ import glob
 from keras.preprocessing import image
 import h5py
 
-train_path = "/home/ravishen/Desktop/ml_course/deepLearning/dataset/train"
-test_path = "/home/ravishen/Desktop/ml_course/deepLearning/dataset/test"
+train_path = os.getcwd()+'/dataset/train'
+test_path = os.getcwd()+'/dataset/test'
 
 train_labels = os.listdir(train_path)
 test_labels = os.listdir(test_path)
@@ -78,22 +84,21 @@ h5_test.create_dataset("data_test", data=np.array(test_x))
 h5_test.close()
 
 def sigmoid(z):
-	return (1/(1+np.exp(-z)))
+    return (1/(1+np.exp(-z)))
 
 def init_params(dimension):
-	w = np.zeros((dimension, 1))
-	b = 0
-	return w, b
+    w = np.zeros((dimension, 1))
+    b = 0
+    return w, b
 
 def propogate(w,b,X,Y):
     m= X.shape[1]
     
     A = sigmoid(np.dot(w.T,X) + b)
-
     cost = (-1/m)*(np.sum(np.multiply(Y,np.log(A)) + np.multiply((1-Y),np.log(1-A))))
     dw = (1/m)*(np.dot(X, (A-Y).T))
     db = (1/m)*(np.sum(A-Y))
-    cost = np.squeeze(cost)
+    #cost = np.squeeze(cost)
     
     grads = {"dw": dw, "db": db}
     return grads, cost
@@ -111,57 +116,49 @@ def optimize(w,b,X,Y,epochs,lr):
         w = w - (lr*dw)
         b = b - (lr*db)
         
-        if i%100== 0:
-            costs.append(cost)
-            print ("cost after %i epochs: %f" %(i, cost))
+        if i%10== 0:
+            print (".",end="", flush=True)
         
-	# param dict
     params = {"w": w, "b": b}
 
-	# gradient dict
     grads  = {"dw": dw, "db": db}
 
     return params, grads, costs
 
 
 def predict(w, b, X):
-	m = X.shape[1]
-	Y_predict = np.zeros((1,m))
-	w = w.reshape(X.shape[0], 1)
+    m = X.shape[1]
+    Y_predict = np.zeros((1,m))
+    w = w.reshape(X.shape[0], 1)
 
-	A = sigmoid(np.dot(w.T, X) + b)
+    A = sigmoid(np.dot(w.T, X) + b)
 
-	for i in range(A.shape[1]):
-		if A[0, i] <= 0.5:
-			Y_predict[0, i] = 0
-		else:
-			Y_predict[0,i]  = 1
+    for i in range(A.shape[1]):
+        if A[0, i] <= 0.5:
+            Y_predict[0, i] = 0
+        else:
+            Y_predict[0,i]  = 1
 
-	return Y_predict
+    return Y_predict
 
 
 def model(X_train, Y_train, X_test, Y_test, epochs, lr):
-	w, b = init_params(X_train.shape[0])
-	params, grads, costs = optimize(w, b, X_train, Y_train, epochs, lr)
+    w, b = init_params(X_train.shape[0])
+    params, grads, costs = optimize(w, b, X_train, Y_train, epochs, lr)
 
-	w = params["w"]
-	b = params["b"]
+    w = params["w"]
+    b = params["b"]
 
-	Y_predict_train = predict(w, b, X_train)
-	Y_predict_test  = predict(w, b, X_test)
+    Y_predict_train = predict(w, b, X_train)
+    Y_predict_test  = predict(w, b, X_test)
     
-	print ("train_accuracy: {} %".format(100-np.mean(np.abs(Y_predict_train - Y_train)) * 100))
-	print ("test_accuracy : {} %".format(100-np.mean(np.abs(Y_predict_test  - Y_test)) * 100))
+    print ("train_accuracy: {} %".format(100-np.mean(np.abs(Y_predict_train - Y_train)) * 100))
+    print ("test_accuracy : {} %".format(100-np.mean(np.abs(Y_predict_test  - Y_test)) * 100))
 
-	log_reg_model = {"costs": costs,
-				     "Y_predict_test": Y_predict_test, 
-					 "Y_predict_train" : Y_predict_train, 
-					 "w" : w, 
-					 "b" : b,
-					 "learning_rate" : lr,
-					 "epochs": epochs}
+    log_reg_model = {"costs": costs,
+                "Y_predict_test": Y_predict_test, "Y_predict_train" : Y_predict_train, "w" : w, "b" : b,"learning_rate" : lr,"epochs": epochs}
 
-	return log_reg_model
+    return log_reg_model
 
 epochs = 2000
 lr = 0.1
@@ -171,4 +168,77 @@ myModel = model(train_x, train_y, test_x, test_y, epochs, lr)
 print(myModel['Y_predict_test'])
 print(myModel['w'])
 print(myModel['b'])
+
+
+
+# In[14]:
+
+
+import urllib.request
+
+
+# In[15]:
+
+
+def download_web_image(url):
+    name = "image"
+    full_name = name+".jpg"
+    urllib.request.urlretrieve(url,full_name)
+    
+    
+
+
+# In[16]:
+
+
+download_web_image("https://akm-img-a-in.tosshub.com/indiatoday/images/story/201806/big_dog_0.jpeg?Hj9xcINeQkp9emv9UULlHzWGNSZeIWov")
+
+
+# In[17]:
+
+
+from IPython.display import Image
+Image(filename='image.jpg') 
+
+
+# In[18]:
+
+
+read_image = cv2.imread('image.jpg')
+
+
+# In[19]:
+
+
+
+resized_image = cv2.resize(read_image, (64, 64)) 
+
+
+# In[20]:
+
+
+resized_image
+
+
+# In[21]:
+
+
+x = image.img_to_array(resized_image)
+
+
+# In[22]:
+
+
+x=x.flatten()
+x
+
+
+# In[23]:
+
+
+temp = sigmoid(np.dot(myModel['w'].T, x) + myModel['b'])
+if(temp<=0.5):
+    print("airplane")
+else:
+    print("Bike")
 
